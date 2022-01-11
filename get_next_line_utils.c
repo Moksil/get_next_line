@@ -10,21 +10,33 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-int	ft_strlcpy(char *dst, const char *src, int size)
+#include "get_next_line.h"
+
+int	ft_strlen(const char *s)
 {
-	int	i;
 	int	len;
 
-	i = 0;
 	len = 0;
-	while (src[len])
+	while (s[len])
 		len++;
-	while (src[i] && (i < size - 1) && size != 0)
+	return (len);
+}
+
+void	*ft_memcpy(void *dest, const void *src, int n)
+{
+	int					i;
+	unsigned char		*dptr;
+	const unsigned char	*sptr;
+
+	if (!dest && !src)
+		return (NULL);
+	i = 0;
+	dptr = dest;
+	sptr = src;
+	while (i < n)
 	{
-		dst[i] = src[i];
+		dptr[i] = sptr[i];
 		i++;
 	}
-	if (size > 0)
-		dst[i] = '\0';
-	return (len);
+	return (dest);
 }

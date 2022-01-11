@@ -9,41 +9,9 @@
 /*   Updated: 2022/01/07 21:49:14 by sungmipa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 #include "get_next_line.h"
-#include <stdio.h>
 
-#define BUFFER_SIZE 1
-
-int	ft_strlen(const char *s)
-{
-	int	len;
-
-	len = 0;
-	while (s[len])
-		len++;
-	return (len);
-}
-
-void	*ft_memcpy(void *dest, const void *src, int n)
-{
-	int					i;
-	unsigned char		*dptr;
-	const unsigned char	*sptr;
-
-	if (!dest && !src)
-		return (NULL);
-	i = 0;
-	dptr = dest;
-	sptr = src;
-	while (i < n)
-	{
-		dptr[i] = sptr[i];
-		i++;
-	}
-	return (dest);
-}
-
+// #define BUFFER_SIZE 1
 
 char	*line_append_ch(char* line, char ch)
 {
@@ -57,56 +25,81 @@ char	*line_append_ch(char* line, char ch)
 	ft_memcpy(ret, line, line_len);
 	ret[line_len] = ch;
 	ret[line_len + 1] = '\0';
-	if (line_len != 0)
-		free(line);
+	free(line);
 	return (ret);
 }
 
 char	*get_next_line(int fd)
 {
-	int		i;
-	int		idx;
-	char	*buf;
-	char	*ret;
+	int			i;
+	int			read_num;
+	char		*buf;
+	char		*ret;
+	static char *remainder;
 
+	ret = (char *)malloc(1);
+	if (ret == NULL)
+		return (NULL);
+	if (remainder == 0)
+	{
+		remainder = (char *)malloc(1);
+		if (remainder == NULL)
+			return (NULL);
+		remainder[0] = '\0';
+	}
+	else
+	{
+		i = 0;
+		while (*remainder && *remainder != '\n')
+		{
+			ret = line_append_ch(ret, *remainder);
+			remainder++;
+		}
+	}
 	buf = (char *)malloc(BUFFER_SIZE);
 	if (buf == NULL)
 		return (NULL);
-	read(fd, buf, BUFFER_SIZE);
+	read_num = read(fd, buf, BUFFER_SIZE);
 	i = 0;
-	ret = "";
-	while (1)
+	while (read_num)
 	{
-		if (i == BUFFER_SIZE)
-		{
-			free(buf);
-			buf = (char *)malloc(BUFFER_SIZE);
-			if (buf == NULL)
-				return (NULL);
-			i -= BUFFER_SIZE;
-			read(fd, buf, BUFFER_SIZE);
-		}
-		if (buf[i] == '\n')
+		while (i < read_num)
 		{
 			ret = line_append_ch(ret, buf[i]);
 			if (ret == NULL)
 				return (NULL);
-			break ;
+			if (buf[i] == '\n')
+			{
+				free(remainder);
+				remainder = (char *)malloc(BUFFER_SIZE - i);
+				if (remainder == NULL)
+					return (NULL);
+				ft_memcpy(remainder, &buf[i + 1], BUFFER_SIZE - i - 1);
+				remainder[BUFFER_SIZE - i] = '\0';
+				return (ret);
+			}
+			i++;
 		}
-		else
-		{
-			ret = line_append_ch(ret, buf[i]);
-			if (ret == NULL)
-				return (NULL);
-		}
-		i++;
+		i = 0;
+		read_num = read(fd ,buf, BUFFER_SIZE);
 	}
 	return (ret);
 }
 
 int main()
 {
-	printf("%s\n", get_next_line(0));
-	return (0);
+	int		fd;
+	int		read_num;
+	char	*buf;
+	char	*line;
+
+	buf = (char *)malloc(3);
+	fd = open("./exam.txt", O_RDONLY);
+	line = get_next_line(fd);
+	printf("%s", line);
+	line = get_next_line(fd);
+	printf("%s", line);
+	return (0); 
 }
+ 
  

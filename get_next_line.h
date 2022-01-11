@@ -16,6 +16,13 @@
 # include <unistd.h>
 # include <stdlib.h>
 
+//------------------------//
+# include <fcntl.h>
+# include <stdio.h>
+//------------------------//
+
+int		ft_strlen(const char *s);
+void	*ft_memcpy(void *dest, const void *src, int n);
 char	*get_next_line(int fd);
 
 #endif
