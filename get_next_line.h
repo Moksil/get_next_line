@@ -23,6 +23,7 @@
 
 int		ft_strlen(const char *s);
 void	*ft_memcpy(void *dest, const void *src, int n);
+char	*ft_strndup(char *src, int n);
 char	*get_next_line(int fd);
 
 #endif
