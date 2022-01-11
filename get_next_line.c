@@ -60,6 +60,8 @@ char	*get_next_line(int fd)
 	char		*ret;
 	static char *remainder;
 
+	if (fd < 0 || fd >256)
+		return (NULL);
 	ret = set_nl_from_remainder(remainder);
 	if (ret == NULL)
 		return (NULL);
