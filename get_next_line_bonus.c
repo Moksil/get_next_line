@@ -177,10 +177,13 @@ char	*get_next_line(int fd)
 		line = ft_strjoin_m(line, buf);
 		nl_ptr = ft_strchr(line, '\n');
 	}
+	// printf("gnl -> remainder : |%s|\n", nl_ptr + 1);
+	// file_node -> remainder = ft_strndup(nl_ptr + 1, -1);
 	if (*(nl_ptr + 1))
 		file_node -> remainder = ft_strndup(nl_ptr + 1, -1);
 	else
 		file_node -> remainder = NULL;
+	// printf("file_node -> remainder : |%s|\n", file_node -> remainder);
 	tmp = line;
 	line = ft_strndup(line, nl_ptr - line + 1);
 	free(tmp);
