@@ -1,5 +1,0 @@
-
-this is second line of exam2.txt
-this is third line of exam2.txt
-
-this is fifth line of exam2.txt

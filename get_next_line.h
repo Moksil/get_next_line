@@ -16,25 +16,19 @@
 # include <unistd.h>
 # include <stdlib.h>
 
-//------------------------//
-# include <fcntl.h>
-# include <stdio.h>
-//------------------------//
+# define FD_MAX	256
 
-typedef struct file_list
+typedef struct s_file_list
 {
 	int					fd;
 	char				*remainder;
-	struct file_list	*next;
-}						f_list;
+	struct s_file_list	*next;
+}						t_list;
 
 int		ft_strlen(const char *s);
 char	*ft_strndup(char *src, int n);
 char	*ft_strchr(const char *s, int c);
 char	*ft_strjoin_m(char *s1, char *s2);
-void	ft_lstclear(f_list **lst);
-char	*split_line_and_remainder(f_list *f_dptr);
-char	**get_remainder_ptr(int fd);
 char	*get_next_line(int fd);
 
 #endif

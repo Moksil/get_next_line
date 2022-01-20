@@ -12,51 +12,80 @@
 
 #include "get_next_line.h"
 
-// void	renew_remainder(char **remainder, int output_len, int fd)
-// {
-// 	char buf[BUFFER_SIZE + 1];
+int	ft_strlen(const char *s)
+{
+	int	len;
 
-// 	if (!(*remainder) || output_len == ft_strlen(*remainder))
-// 	{
-// 		free(*remainder); 
-// 		*remainder = ft_strndup("", 0);
-// 	} // remainder에 개행 없음 -> 전부 line으로 전달, free(remainder), remainder = NULL;
-// 	else
-// 	{
-// 		ft_memcpy(buf, (const char*)&(*remainder[output_len + 1]), ft_strlen(*remainder) - (output_len + 1));
-// 		buf[ft_strlen(*remainder) - (output_len + 1)] = '\0';
-// 		free(*remainder);
-// 		*remainder = ft_strndup(buf, BUFFER_SIZE);
-// 	}
-// }
+	len = 0;
+	while (s[len])
+		len++;
+	return (len);
+}
 
-// char	*set_nl_from_remainder(f_list *remain_list, int fd)
-// {
-// 	int		output_len;
-// 	char	*ret;
-// 	char	*remainder;
+char	*ft_strndup(char *src, int n)
+{
+	int		i;
+	int		len;
+	char	*dest;
 
-// 	while (remain_list)
-// 	{
-// 		if (remain_list -> fd == fd)
-// 			remainder = remain_list->remainder;
-// 		else
-// 			remain_list = remain_list->next;
-// 	}
-// 	output_len = 0;
-// 	if (remainder)
-// 	{
-// 		while (remainder[output_len] && remainder[output_len] != '\n')
-// 			output_len++;
-// 		if (remainder[output_len] == '\0')
-// 			ret = ft_strndup(remainder, ft_strlen(remainder));
-// 		else
-// 			ret = ft_strndup(remainder, output_len + 1);
-// 		renew_remainder(remainder, output_len);
-// 		if (remainder == NULL)
-// 			return (NULL);
-// 	}
-// 	else
-// 		ret = ft_strndup("", 0);
-// 	return (ret);
-// }
+	if (src[0] == '\0')
+		return (NULL);
+	if (ft_strlen(src) < n || n == -1)
+		len = ft_strlen(src);
+	else
+		len = n;
+	dest = (char *)malloc(len + 1);
+	if (dest == NULL)
+		return (NULL);
+	i = 0;
+	while (i < len)
+	{
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = '\0';
+	return (dest);
+}
+
+char	*ft_strchr(const char *s, int c)
+{
+	int	i;
+
+	if (s == NULL)
+		return (NULL);
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == (char)c)
+			return ((char *)(&s[i]));
+		i++;
+	}
+	if (c == 0)
+		return ((char *)&s[i]);
+	return (NULL);
+}
+
+char	*ft_strjoin_m(char *s1, char *s2)
+{
+	int		i;
+	int		s1_len;
+	int		s2_len;
+	char	*joined_str;
+
+	if (s1 == NULL)
+		return (ft_strndup(s2, -1));
+	s1_len = ft_strlen(s1);
+	s2_len = ft_strlen(s2);
+	joined_str = (char *)malloc(s1_len + s2_len + 1);
+	if (joined_str == NULL)
+		return (NULL);
+	joined_str[s1_len + s2_len] = '\0';
+	i = -1;
+	while (++i < s1_len)
+		joined_str[i] = s1[i];
+	i = -1;
+	while (++i <= s2_len)
+		joined_str[s1_len + i] = s2[i];
+	free(s1);
+	return (joined_str);
+}

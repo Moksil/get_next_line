@@ -12,86 +12,10 @@
 
 #include "get_next_line.h"
 
-int	ft_strlen(const char *s)
+static void	file_node_free(t_list *lst, int fd)
 {
-	int	len;
-
-	len = 0;
-	while (s[len])
-		len++;
-	return (len);
-}
-
-char	*ft_strndup(char *src, int n)
-{
-	int		i;
-	int		len;
-	char	*dest;
-
-	if (ft_strlen(src) < n || n == -1)
-		len = ft_strlen(src);
-	else
-		len = n;
-	dest = (char *)malloc(len + 1);
-	if (dest == NULL)
-		return (NULL);
-	i = 0;
-	while (i < len)
-	{
-		dest[i] = src[i];
-		i++;
-	}
-	dest[i] = '\0';
-	return (dest);
-}
-
-char	*ft_strchr(const char *s, int c)
-{
-	int	i;
-	
-	if (s == NULL)
-		return (NULL);
-	i = 0;
-	while (s[i])
-	{
-		if (s[i] == (char)c)
-			return ((char *)(&s[i]));
-		i++;
-	}
-	if (c == 0)
-		return ((char *)&s[i]);
-	return (NULL);
-}
-
-char	*ft_strjoin_m(char *s1, char *s2)
-{
-	int		i;
-	int		s1_len;
-	int		s2_len;
-	char	*joined_str;
-
-	if (s1 == NULL)
-		return (ft_strndup(s2, -1));
-	s1_len = ft_strlen(s1);
-	s2_len = ft_strlen(s2);
-	joined_str = (char *)malloc(s1_len + s2_len + 1);
-	if (joined_str == NULL)
-		return (NULL);
-	joined_str[s1_len + s2_len] = '\0';
-	i = -1;
-	while (++i < s1_len)
-		joined_str[i] = s1[i];
-	i = -1;
-	while (++i <= s2_len)
-		joined_str[s1_len + i] = s2[i];
-	free(s1);
-	return (joined_str);
-}
-
-void	file_node_free(f_list *lst, int fd)
-{
-	f_list	*prev;
-	f_list	*cur;
+	t_list	*prev;
+	t_list	*cur;
 
 	prev = NULL;
 	cur = lst;
@@ -102,30 +26,30 @@ void	file_node_free(f_list *lst, int fd)
 			if (prev)
 				prev -> next = cur -> next;
 			free(cur);
-			break;
+			break ;
 		}
 		prev = cur;
 		cur = cur -> next;
 	}
 }
 
-f_list	*get_file_node(int fd, f_list *lst)
+static t_list	*get_file_node(int fd, t_list *lst)
 {
-	f_list			*prev;
-	f_list			*cur;
-	f_list			*new_file;
-	
+	t_list			*prev;
+	t_list			*cur;
+	t_list			*new_file;
+
 	prev = NULL;
 	cur = lst;
 	while (cur)
 	{
 		if (cur -> fd == fd)
-			return(cur);
+			return (cur);
 		prev = cur;
 		cur = cur -> next;
 	}
-	new_file = (f_list *)malloc(sizeof(f_list));
-	if (new_file == NULL) // !!!!!!!!!!!!동적할당 실패 예외처리!!!!!!!!!!!
+	new_file = (t_list *)malloc(sizeof(t_list));
+	if (new_file == NULL)
 		return (NULL);
 	if (prev)
 		prev -> next = new_file;
@@ -135,20 +59,11 @@ f_list	*get_file_node(int fd, f_list *lst)
 	return (new_file);
 }
 
-char	*get_next_line(int fd)
+static char	*get_line_from_remainder(t_list *file_node)
 {
-	static f_list	*lst;
-	f_list			*file_node;
-	char			buf[BUFFER_SIZE + 1];
-	char			*nl_ptr;
-	char			*line;
-	char			*tmp;
-	int				read_flag;
+	char	*line;
 
-	file_node = get_file_node(fd, lst);
-	if (lst == NULL)
-		lst = file_node;
-	if (file_node -> remainder == NULL)	// 어떤 fd에도 남은 remainder가 없는경우.
+	if (file_node -> remainder == NULL)
 		line = NULL;
 	else
 	{
@@ -158,53 +73,62 @@ char	*get_next_line(int fd)
 		free(file_node -> remainder);
 		file_node -> remainder = NULL;
 	}
-	nl_ptr = ft_strchr(line, '\n');
-	while (nl_ptr == NULL)
-	{
-		read_flag = read(fd, buf, BUFFER_SIZE);
-		if(read_flag == 0)
-		{
-			if (lst == file_node)
-			{
-				lst = file_node -> next;
-				free(file_node);
-			}
-			else
-				file_node_free(lst, fd);
-			return (line);
-		}
-		buf[read_flag] = '\0';
-		line = ft_strjoin_m(line, buf);
-		nl_ptr = ft_strchr(line, '\n');
-	}
-	if (*(nl_ptr + 1))
-		file_node -> remainder = ft_strndup(nl_ptr + 1, -1);
-	else
-		file_node -> remainder = NULL;
-	tmp = line;
-	line = ft_strndup(line, nl_ptr - line + 1);
-	free(tmp);
 	return (line);
 }
 
-// int main(void)
-// {
-// 	int		fd1;
-// 	int		fd2;
+static char	*read_and_remain(t_list *lst, char *line, int *flag, int fd)
+{
+	t_list	*s_file_list;
+	char	buf[BUFFER_SIZE + 1];
+	char	*nl_ptr;
 
-// 	int		i;
+	s_file_list = get_file_node(fd, lst);
+	nl_ptr = ft_strchr(line, '\n');
+	while (nl_ptr == NULL)
+	{
+		*flag = read(fd, buf, BUFFER_SIZE);
+		if (*flag == 0 || *flag == -1)
+		{
+			if (*flag == -1 || (*flag == 0 && lst == s_file_list))
+				*flag -= 1;
+			else
+				*flag = 0;
+			return (line);
+		}
+		buf[*flag] = '\0';
+		line = ft_strjoin_m(line, buf);
+		nl_ptr = ft_strchr(line, '\n');
+	}
+	s_file_list -> remainder = ft_strndup(nl_ptr + 1, -1);
+	line = ft_strndup(line, nl_ptr - line + 1);
+	free(nl_ptr - ft_strlen(line) + 1);
+	return (line);
+}
 
-// 	i = -1;
-// 	fd1 = open("./exam.txt", O_RDONLY);
-// 	// fd2 = open("./exam2.txt", O_RDONLY);
-// 	printf("result : |%s|\n", get_next_line(fd1));
-// 	printf("result : |%s|\n", get_next_line(fd1));
-// 	printf("result : |%s|\n", get_next_line(fd1));
-// 	printf("result : |%s|\n", get_next_line(fd1));
-// 	printf("result : |%s|\n", get_next_line(fd1));
-// 	printf("result : |%s|\n", get_next_line(fd1));
-		
-// 	// printf("%s", get_next_line(fd2));
+char	*get_next_line(int fd)
+{
+	static t_list	*lst;
+	t_list			*file_node;
+	char			*line;
+	int				flag;
 
-// 	return (0);
-// }
+	if (fd > FD_MAX || fd < 0)
+		return (NULL);
+	file_node = get_file_node(fd, lst);
+	if (file_node == NULL)
+		return (NULL);
+	if (lst == NULL)
+		lst = file_node;
+	line = get_line_from_remainder(file_node);
+	line = read_and_remain(lst, line, &flag, fd);
+	if (flag <= -1)
+	{
+		lst = file_node -> next;
+		free(file_node);
+		if (flag == -2)
+			return (NULL);
+	}
+	else if (flag == 0)
+		file_node_free(lst, fd);
+	return (line);
+}
