@@ -120,6 +120,7 @@ char	*get_next_line(int fd)
 		return (NULL);
 	if (lst == NULL)
 		lst = file_node;
+	flag = 1;
 	line = get_line_from_remainder(file_node);
 	line = read_and_remain(lst, line, &flag, fd);
 	if (flag <= -1)

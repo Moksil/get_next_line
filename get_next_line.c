@@ -120,6 +120,7 @@ char	*get_next_line(int fd)
 		return (NULL);
 	if (lst == NULL)
 		lst = file_node;
+	flag = 1;
 	line = get_line_from_remainder(file_node);
 	line = read_and_remain(lst, line, &flag, fd);
 	if (flag <= -1)
@@ -135,3 +136,35 @@ char	*get_next_line(int fd)
 		return (NULL);
 	return (line);
 }
+
+// #include <stdio.h>
+// #include <fcntl.h>
+
+// int main(void)
+// {
+// 	char	*line;
+// 	char	*line2;
+// 	int fd1;
+// 	int fd2;
+// 	int i = 0;
+// 	fd1 = open("./test.txt", O_RDONLY);
+// 	fd2 = open("./test2.txt", O_RDONLY);
+
+
+// 	line = get_next_line(fd1);
+// 	line2 = get_next_line(fd2);
+// 	while (line || line2)
+// 	{
+// 		printf("1 - %d call : |%s|\n", ++i, line);
+// 		printf("2 - %d call : |%s|\n", i, line2);
+// 		free(line);
+// 		free(line2);
+// 		line = get_next_line(fd1);
+// 		line2 = get_next_line(fd2);
+// 	}
+
+// 	close(fd1);
+// 	close(fd2);
+// 	system("leaks a.out");
+// 	return(0);
+// }
