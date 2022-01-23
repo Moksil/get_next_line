@@ -12,7 +12,7 @@
 
 #include "get_next_line_bonus.h"
 
-static void	file_node_free(t_list *lst, int fd)
+static t_list	*file_node_free(t_list *lst, int fd)
 {
 	t_list	*prev;
 	t_list	*cur;
@@ -25,13 +25,20 @@ static void	file_node_free(t_list *lst, int fd)
 		{
 			if (prev)
 				prev->next = cur->next;
+			else
+			{
+				prev = cur;
+				cur = cur -> next;
+				free(prev);
+				return (cur);
+			}
 			free(cur);
-			cur = NULL;
 			break ;
 		}
 		prev = cur;
 		cur = cur->next;
 	}
+	return (prev);
 }
 
 static t_list	*get_file_node(int fd, t_list *lst)
@@ -90,13 +97,7 @@ static char	*read_and_remain(t_list *lst, char *line, int *flag, int fd)
 	{
 		*flag = read(fd, buf, BUFFER_SIZE);
 		if (*flag == 0 || *flag == -1)
-		{
-			if (*flag == -1 || (*flag == 0 && lst == get_file_node(fd, lst)))
-				*flag -= 1;
-			else
-				*flag = 0;
 			return (line);
-		}
 		buf[*flag] = '\0';
 		line = ft_strjoin_m(line, buf);
 		nl_ptr = ft_strchr(line, '\n');
@@ -123,15 +124,15 @@ char	*get_next_line(int fd)
 	flag = 1;
 	line = get_line_from_remainder(file_node);
 	line = read_and_remain(lst, line, &flag, fd);
-	if (flag <= -1)
+	if (flag <= 0)
 	{
-		lst = file_node->next;
-		free(file_node);
-		if (flag == -2)
+		if (lst == get_file_node(fd, lst))
+			lst = file_node_free(lst, fd);
+		else
+			file_node_free(lst, fd);
+		if (flag == -1)
 			return (NULL);
 	}
-	else if (flag == 0)
-		file_node_free(lst, fd);
 	if (!line && !(file_node->remainder))
 		return (NULL);
 	return (line);
